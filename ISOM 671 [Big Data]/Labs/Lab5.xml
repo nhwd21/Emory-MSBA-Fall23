@@ -1,0 +1,29 @@
+<workflow-app name="S3-to-HDFS" xmlns="uri:oozie:workflow:0.5">
+	<start to="s3-to-hdfs-copy"/>
+	<kill name="Kill">
+    	<message>Workflow failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<action name="s3-to-hdfs-copy">
+    	<sqoop xmlns="uri:oozie:sqoop-action:0.2">
+        	<job-tracker>ec2-54-86-214-57.compute-1.amazonaws.com:8032</job-tracker>
+        	<name-node>hdfs://ec2-54-86-214-57.compute-1.amazonaws.com:8020</name-node>
+        	<command>s3-dist-cp --src s3://fm-671happy/Lab5Part5/ --dest=hdfs:///user/hadoop/Lab5Part5</command>
+    	</sqoop>
+    	<ok to="send-email"/>
+    	<error to="Kill"/>
+	</action>
+	<action name="send-email">
+    	<email xmlns="uri:oozie:email-action:0.2">
+        	<to>dmosden@emory.edu</to>
+        	<subject>Workflow CustomWorkflow Completed Successfully</subject>
+        	<body>
+            	The workflow named CustomWorkflow has completed successfully.
+        	</body>
+        	<content_type>text/plain</content_type>
+    	</email>
+    	<ok to="End"/>
+    	<error to="Kill"/>
+	</action>
+	<end name="End"/>
+</workflow-app>
+
